@@ -4,21 +4,29 @@ function atualizarQuantidade() {
 }
 
 function listarTarefas(){
-    let conteudo = buscar().sort().map(function(tarefas){
-        return`
-        <div>
-        <input type ="checkbox">
-        ${tarefas.titulo}
+    fetch('https://62a4da7d47e6e4006399353b.mockapi.io/v1/tarefas2')
+        .then(function (resposta) {
+            return resposta.json();
+        })
+        .then(function (resposta) {
+            if (typeof resposta !== "string") {
+                let conteudo = resposta
+                    .map(function (tarefa) {
+                        return tarefa.titulo;
+                    })
+                    .sort()
+                    .map(function (tarefa) {
+                        return `
+                            <div>
+                                <input type="checkbox"> ${tarefa}
+                            </div>
+                        `;
+                    });
 
-        <span class = "badge ${tarefas.prioridade === 'Baixa' && 'bg-primary'}  ${tarefas.prioridade === 'Media' && 'bg-warning'}  ${tarefas.prioridade === 'Alta' && 'bg-danger'}">
-        ${tarefas.prioridade}
-        </span>
-        </div>
-    `;
-    })
-    document.getElementById('tarefas').innerHTML=conteudo.join("");
-
-};
+                document.getElementById('tarefas').innerHTML = conteudo.join('');
+            }
+        })
+}
 
 function addTarefa(){
     event.preventDefault();
@@ -29,20 +37,29 @@ function addTarefa(){
         alert("tarefa invalida");
         return;
     }
-    if(true === lista_tarefas.includes(titulo)){
-        alert("Tarefa já existe");
-        return;
-    }
 
  
 
-    salvar(titulo, input_prioridade.value);
-
-    document.getElementById("input_nova_tarefa").value="";
-   
-   
-    atualizarQuantidade();
-    listarTarefas();
+    fetch('https://62a4da7d47e6e4006399353b.mockapi.io/v1/tarefas2', {
+        method: "POST",
+        body: JSON.stringify({
+            titulo,
+            prioridade: "baixa"
+        }),
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    })
+        .then(function (resposta) {
+            return resposta.json();
+        })
+        .then(function (resposta) {
+            alert(JSON.stringify(resposta))
+            document.getElementById('input_nova_tarefa').value = '';
+            atualizarQuantidade();
+            listarTarefas();
+        })
 }
 
 listarTarefas();
